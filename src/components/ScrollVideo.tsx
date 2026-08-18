@@ -28,7 +28,7 @@ export default function ScrollVideo({ src, onDurationChange, onProgress }: Scrol
     const video = videoRef.current
     if (!video) return
 
-    ScrollTrigger.create({
+    const trigger = ScrollTrigger.create({
       trigger: 'body',
       start: 'top top',
       end: 'bottom bottom',
@@ -45,7 +45,7 @@ export default function ScrollVideo({ src, onDurationChange, onProgress }: Scrol
     })
 
     return () => {
-      ScrollTrigger.getAll().forEach(t => t.kill())
+      trigger.kill()
     }
   }, { scope: videoRef })
 
