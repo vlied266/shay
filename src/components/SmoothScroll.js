@@ -15,8 +15,9 @@ export default function SmoothScroll({ children }) {
     const location = useLocation();
     const prefersReducedMotion = window.matchMedia('(prefers-reduce-motion: reduce)').matches;
     useEffect(() => {
-        if (prefersReducedMotion)
+        if (prefersReducedMotion) {
             return;
+        }
         if (lenisRef.current) {
             lenisRef.current.destroy();
         }
@@ -28,16 +29,18 @@ export default function SmoothScroll({ children }) {
         });
         lenisRef.current = lenis;
         lenisInstance = lenis;
-        const onUpdate = (time) => {
-            lenis.raf(time);
+        const onUpdate = () => {
+            lenis.raf(Date.now());
             ScrollTrigger.update();
         };
         gsap.ticker.add(onUpdate);
         return () => {
             gsap.ticker.remove(onUpdate);
-            lenis.destroy();
-            lenisRef.current = null;
-            lenisInstance = null;
+            if (lenisRef.current) {
+                lenisRef.current.destroy();
+                lenisRef.current = null;
+                lenisInstance = null;
+            }
         };
     }, [prefersReducedMotion]);
     useEffect(() => {

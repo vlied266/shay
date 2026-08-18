@@ -23,7 +23,9 @@ export default function SmoothScroll({ children }: SmoothScrollProps) {
   const prefersReducedMotion = window.matchMedia('(prefers-reduce-motion: reduce)').matches
 
   useEffect(() => {
-    if (prefersReducedMotion) return
+    if (prefersReducedMotion) {
+      return
+    }
 
     if (lenisRef.current) {
       lenisRef.current.destroy()
@@ -39,8 +41,8 @@ export default function SmoothScroll({ children }: SmoothScrollProps) {
     lenisRef.current = lenis
     lenisInstance = lenis
 
-    const onUpdate = (time: number) => {
-      lenis.raf(time)
+    const onUpdate = () => {
+      lenis.raf(Date.now())
       ScrollTrigger.update()
     }
 
@@ -48,9 +50,11 @@ export default function SmoothScroll({ children }: SmoothScrollProps) {
 
     return () => {
       gsap.ticker.remove(onUpdate)
-      lenis.destroy()
-      lenisRef.current = null
-      lenisInstance = null
+      if (lenisRef.current) {
+        lenisRef.current.destroy()
+        lenisRef.current = null
+        lenisInstance = null
+      }
     }
   }, [prefersReducedMotion])
 

@@ -92,8 +92,11 @@ export default function Experience() {
         duration: 1,
       })
 
-      // Credit section
-      gsap.to('.credit-section', {
+      // Credit section fade in
+      gsap.fromTo('.credit-section', {
+        opacity: 0,
+        y: 50,
+      }, {
         scrollTrigger: {
           trigger: '.credit-section',
           start: 'top 80%',
@@ -104,38 +107,38 @@ export default function Experience() {
         y: 0,
       })
 
-      // Chapter text animations
-      CHAPTERS.forEach((chapter) => {
-        gsap.to(`[data-chapter="${chapter.id}"]`, {
-          scrollTrigger: {
-            trigger: 'body',
-            start: 'top top',
-            end: 'bottom bottom',
-            onUpdate: (self) => {
-              const progress = self.progress
-              if (progress >= chapter.startProgress && progress <= chapter.endProgress) {
-                const chapterProgress = (progress - chapter.startProgress) / (chapter.endProgress - chapter.startProgress)
-                gsap.set(`[data-chapter="${chapter.id}"]`, {
-                  opacity: Math.min(chapterProgress * 2, 1),
-                  y: Math.max(50 * (1 - chapterProgress), 0),
-                })
-              } else {
-                gsap.set(`[data-chapter="${chapter.id}"]`, {
-                  opacity: 0,
-                  y: 50,
-                })
-              }
-            }
-          }
-        })
-      })
-
-      // Update active chapter
-      ScrollTrigger.create({
+      // Chapter text animations - use onUpdate on ScrollTrigger directly
+      const scrollProgress = ScrollTrigger.create({
         trigger: 'body',
         start: 'top top',
-        end: 'bottom bottom'
+        end: 'bottom bottom',
+        onUpdate: (self) => {
+          const progress = self.progress
+          CHAPTERS.forEach((chapter) => {
+            if (progress >= chapter.startProgress && progress <= chapter.endProgress) {
+              const chapterProgress = (progress - chapter.startProgress) / (chapter.endProgress - chapter.startProgress)
+              gsap.set(`[data-chapter="${chapter.id}"]`, {
+                opacity: Math.min(chapterProgress * 2, 1),
+                y: Math.max(50 * (1 - chapterProgress), 0),
+              })
+            } else if (progress < chapter.startProgress) {
+              gsap.set(`[data-chapter="${chapter.id}"]`, {
+                opacity: 0,
+                y: 50,
+              })
+            } else {
+              gsap.set(`[data-chapter="${chapter.id}"]`, {
+                opacity: 0,
+                y: -50,
+              })
+            }
+          })
+        }
       })
+
+      return () => {
+        scrollProgress.kill()
+      }
     }, containerRef)
 
     return () => ctx.revert()
