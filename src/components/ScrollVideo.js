@@ -39,10 +39,8 @@ export default function ScrollVideo({ src, onDurationChange, onProgress }) {
         const video = videoRef.current;
         if (!video)
             return;
+        // Use viewport as trigger instead of 'body'
         const trigger = ScrollTrigger.create({
-            trigger: 'body',
-            start: 'top top',
-            end: 'bottom bottom',
             onUpdate: (self) => {
                 if (video.duration) {
                     const targetTime = video.duration * self.progress;

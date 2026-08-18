@@ -109,7 +109,7 @@ export default function Experience() {
 
       // Chapter text animations - use onUpdate on ScrollTrigger directly
       const scrollProgress = ScrollTrigger.create({
-        trigger: 'body',
+        trigger: containerRef.current,
         start: 'top top',
         end: 'bottom bottom',
         onUpdate: (self) => {
