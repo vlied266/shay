@@ -1,0 +1,97 @@
+.auto-tour {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  z-index: 100;
+  pointer-events: auto;
+}
+
+.auto-tour-control {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(26, 26, 26, 0.85);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 8px;
+  backdrop-filter: blur(8px);
+}
+
+.tour-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.tour-btn:hover {
+  background: rgba(212, 175, 55, 0.1);
+  color: #d4af37;
+}
+
+.tour-btn:focus-visible {
+  outline: 2px solid #d4af37;
+  outline-offset: 2px;
+}
+
+.tour-btn-primary {
+  min-width: 90px;
+  justify-content: center;
+}
+
+.tour-btn-secondary,
+.tour-btn-speed {
+  padding: 8px;
+  min-width: 32px;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.tour-progress {
+  font-size: 12px;
+  color: #d4af37;
+  font-weight: 600;
+  min-width: 40px;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .auto-tour {
+    bottom: 20px;
+    right: 20px;
+  }
+
+  .auto-tour-control {
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  .tour-btn span {
+    display: none;
+  }
+
+  .tour-btn-primary {
+    min-width: auto;
+    padding: 8px;
+  }
+
+  .tour-progress {
+    font-size: 11px;
+    min-width: 36px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tour-btn {
+    transition: none;
+  }
+}
