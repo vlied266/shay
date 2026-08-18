@@ -5,9 +5,6 @@ import ScrollTrigger from 'gsap/ScrollTrigger'
 
 gsap.registerPlugin(ScrollTrigger)
 
-const SEEK_THRESHOLD = 0.016
-const DAMPING_FACTOR = 0.15
-
 interface ScrollVideoProps {
   src: string
   onDurationChange?: (duration: number) => void
@@ -18,11 +15,38 @@ export default function ScrollVideo({ src, onDurationChange, onProgress }: Scrol
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
-  const playheadRef = useRef(0)
-  const targetTimeRef = useRef(0)
-  const isSeeking = useRef(false)
-  const rafRef = useRef<number | null>(null)
-  const prefersReducedMotion = window.matchMedia('(prefers-reduce-motion: reduce)').matches
+
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+
+    const handleLoadedMetadata = () => {
+      setIsLoading(false)
+      onDurationChange?.(video.duration)
+      console.log('Video loaded:', video.duration)
+    }
+
+    const handlePlay = (e: Event) => {
+      e.preventDefault()
+      ;(e.target as HTMLVideoElement).pause()
+    }
+
+    const handleError = (e: Event) => {
+      console.error('Video error:', e)
+      setHasError(true)
+      setIsLoading(false)
+    }
+
+    video.addEventListener('loadedmetadata', handleLoadedMetadata)
+    video.addEventListener('play', handlePlay)
+    video.addEventListener('error', handleError)
+
+    return () => {
+      video.removeEventListener('loadedmetadata', handleLoadedMetadata)
+      video.removeEventListener('play', handlePlay)
+      video.removeEventListener('error', handleError)
+    }
+  }, [onDurationChange, onProgress])
 
   useGSAP(() => {
     const video = videoRef.current
@@ -33,14 +57,11 @@ export default function ScrollVideo({ src, onDurationChange, onProgress }: Scrol
       start: 'top top',
       end: 'bottom bottom',
       onUpdate: (self) => {
-        targetTimeRef.current = video.duration * self.progress
-
-        if (!isSeeking.current && Math.abs(targetTimeRef.current - playheadRef.current) > SEEK_THRESHOLD) {
-          video.currentTime = targetTimeRef.current
-          isSeeking.current = true
+        if (video.duration) {
+          const targetTime = video.duration * self.progress
+          video.currentTime = targetTime
+          onProgress?.(self.progress)
         }
-
-        onProgress?.(self.progress)
       }
     })
 
@@ -48,65 +69,6 @@ export default function ScrollVideo({ src, onDurationChange, onProgress }: Scrol
       trigger.kill()
     }
   }, { scope: videoRef })
-
-  useEffect(() => {
-    const video = videoRef.current
-    if (!video) return
-
-    const handleLoadedMetadata = () => {
-      setIsLoading(false)
-      onDurationChange?.(video.duration)
-    }
-
-    const handlePlay = (e: Event) => {
-      e.preventDefault()
-      ;(e.target as HTMLVideoElement).pause()
-    }
-
-    const handleSeeked = () => {
-      isSeeking.current = false
-      playheadRef.current = video.currentTime
-    }
-
-    const handleError = () => {
-      setHasError(true)
-      setIsLoading(false)
-    }
-
-    video.addEventListener('loadedmetadata', handleLoadedMetadata)
-    video.addEventListener('play', handlePlay)
-    video.addEventListener('seeked', handleSeeked)
-    video.addEventListener('error', handleError)
-
-    return () => {
-      video.removeEventListener('loadedmetadata', handleLoadedMetadata)
-      video.removeEventListener('play', handlePlay)
-      video.removeEventListener('seeked', handleSeeked)
-      video.removeEventListener('error', handleError)
-    }
-  }, [onDurationChange, onProgress])
-
-  useEffect(() => {
-    if (!videoRef.current || prefersReducedMotion) return
-
-    const ease = () => {
-      const video = videoRef.current
-      if (!video || isSeeking.current) return
-
-      const delta = targetTimeRef.current - playheadRef.current
-      playheadRef.current += delta * DAMPING_FACTOR
-
-      if (Math.abs(delta) > SEEK_THRESHOLD) {
-        rafRef.current = requestAnimationFrame(ease)
-      }
-    }
-
-    rafRef.current = requestAnimationFrame(ease)
-
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current)
-    }
-  }, [prefersReducedMotion])
 
   return (
     <div className="fixed inset-0 w-full h-full overflow-hidden bg-black">
