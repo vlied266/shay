@@ -18,24 +18,29 @@ export default function SmoothScroll({ children }) {
         if (prefersReducedMotion) {
             return;
         }
+        // Clean up existing instance
         if (lenisRef.current) {
             lenisRef.current.destroy();
+            lenisRef.current = null;
         }
+        // Create new Lenis instance
         const lenis = new Lenis({
-            lerp: 0.1,
-            wheelMultiplier: 1,
+            lerp: 0.08,
+            wheelMultiplier: 1.2,
+            touchMultiplier: 1,
             smoothWheel: true,
-            syncTouch: false,
+            syncTouch: true,
         });
         lenisRef.current = lenis;
         lenisInstance = lenis;
-        const onUpdate = () => {
-            lenis.raf(Date.now());
+        // Connect to GSAP ticker
+        const update = (time) => {
+            lenis.raf(time);
             ScrollTrigger.update();
         };
-        gsap.ticker.add(onUpdate);
+        gsap.ticker.add(update);
         return () => {
-            gsap.ticker.remove(onUpdate);
+            gsap.ticker.remove(update);
             if (lenisRef.current) {
                 lenisRef.current.destroy();
                 lenisRef.current = null;
